@@ -11,6 +11,10 @@ export function getPool() {
   return pool
 }
 
+export async function getConnection() {
+  return pool.getConnection()
+}
+
 export function closePool() {
   return pool.end()
 }

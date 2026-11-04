@@ -1,11 +1,11 @@
 # StockFlow MVP
 
-StockFlow is a SaaS inventory management system. The project includes a React/Vite frontend and an Express REST API backend with a MySQL database layer. Authentication and frontend database integration are intentionally deferred.
+StockFlow is a SaaS inventory management system. The project includes a React/Vite frontend and an Express REST API backend with a MySQL database layer and JWT authentication. Product APIs and frontend database integration are intentionally deferred.
 
 ## Project structure
 
 - `frontend/` - React application powered by Vite, Tailwind CSS, and React Router
-- `backend/` - Express REST API and MySQL connection layer
+- `backend/` - Express REST API, authentication, and MySQL connection layer
 - `backend/database/init.sql` - MySQL database and table definitions
 
 ## Prerequisites
@@ -23,7 +23,7 @@ cd ..\backend
 npm install
 ```
 
-The backend uses `mysql2/promise` with a reusable connection pool. Database credentials are read from environment variables and are never stored in source code.
+The backend uses `mysql2/promise` with a reusable connection pool, `bcrypt` for password hashing, and `jsonwebtoken` for signed access tokens. Database credentials and signing secrets are read from environment variables and are never stored in source code.
 
 ## Create the database with MySQL Workbench
 
@@ -52,9 +52,11 @@ DB_PORT=3306
 DB_USER=your_mysql_username
 DB_PASSWORD=your_mysql_password
 DB_NAME=stockflow_db
+JWT_SECRET=replace_with_a_long_random_secret
+JWT_EXPIRES_IN=1d
 ```
 
-`.env` is ignored by Git. Never commit credentials.
+Use a long, random `JWT_SECRET`. `.env` is ignored by Git. Never commit credentials or secrets.
 
 ## Test the database connection
 
@@ -95,4 +97,64 @@ Expected response:
 
 ```json
 {"success":true,"message":"StockFlow API is running"}
+```
+
+## Authentication endpoints
+
+### Register
+
+`POST /api/auth/register`
+
+Request body:
+
+```json
+{
+  "name": "Ada Lovelace",
+  "email": "ada@example.com",
+  "password": "correct horse battery staple",
+  "organizationName": "Analytical Engines"
+}
+```
+
+Registration creates the organization, linked user, and default settings in one transaction. Duplicate emails return `409`.
+
+### Login
+
+`POST /api/auth/login`
+
+Request body:
+
+```json
+{
+  "email": "ada@example.com",
+  "password": "correct horse battery staple"
+}
+```
+
+Invalid credentials return `401`. Successful responses include a JWT and safe user details; `password_hash` is never returned.
+
+Protected routes can use `authenticateToken` from `backend/src/middleware/authMiddleware.js`:
+
+```http
+Authorization: Bearer <token>
+```
+
+Missing, invalid, and expired tokens return `401`.
+
+## Authentication test checklist
+
+Using Postman or curl:
+
+1. Register with valid fields and confirm `201`, a token, and safe user details.
+2. Repeat registration with the same email and confirm `409`.
+3. Login with the registered credentials and confirm `200` and a token.
+4. Login with a wrong password and confirm `401`.
+5. Add a temporary protected route with `authenticateToken`, call it without `Authorization`, and confirm `401`.
+6. Call it with a modified or expired token and confirm `401`.
+
+Example requests:
+
+```powershell
+curl.exe -X POST http://localhost:5000/api/auth/register -H "Content-Type: application/json" -d "{\"name\":\"Ada Lovelace\",\"email\":\"ada@example.com\",\"password\":\"correct horse battery staple\",\"organizationName\":\"Analytical Engines\"}"
+curl.exe -X POST http://localhost:5000/api/auth/login -H "Content-Type: application/json" -d "{\"email\":\"ada@example.com\",\"password\":\"correct horse battery staple\"}"
 ```

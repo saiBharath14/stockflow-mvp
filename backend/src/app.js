@@ -1,6 +1,7 @@
 import cors from 'cors'
 import dotenv from 'dotenv'
 import express from 'express'
+import authRoutes from './routes/authRoutes.js'
 
 dotenv.config()
 
@@ -11,6 +12,16 @@ app.use(express.json())
 
 app.get('/api/health', (_request, response) => {
   response.json({ success: true, message: 'StockFlow API is running' })
+})
+
+app.use('/api/auth', authRoutes)
+
+app.use((error, _request, response, _next) => {
+  console.error(error)
+  response.status(500).json({
+    success: false,
+    message: 'Internal server error',
+  })
 })
 
 export default app
