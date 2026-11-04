@@ -1,6 +1,6 @@
 # StockFlow MVP
 
-StockFlow is a SaaS inventory management system. The project includes a React/Vite frontend and an Express REST API backend with a MySQL database layer and JWT authentication. Product APIs and frontend database integration are intentionally deferred.
+StockFlow is a SaaS inventory management system. The project includes a React/Vite frontend and an Express REST API backend with a MySQL database layer, JWT authentication, and organization-scoped product management. Frontend database integration is intentionally deferred.
 
 ## Project structure
 
@@ -140,6 +140,68 @@ Authorization: Bearer <token>
 ```
 
 Missing, invalid, and expired tokens return `401`.
+
+## Product endpoints
+
+All product endpoints require:
+
+```http
+Authorization: Bearer <token>
+```
+
+The organization is always taken from the verified token. `organization_id` is not accepted from request bodies.
+
+### Create product
+
+`POST /api/products`
+
+```json
+{
+  "name": "Wireless Keyboard",
+  "sku": "KB-001",
+  "description": "Compact wireless keyboard",
+  "quantity_on_hand": 25,
+  "cost_price": 18.5,
+  "selling_price": 29.99,
+  "low_stock_threshold": 5
+}
+```
+
+Only `name` and `sku` are required. Optional numeric fields default from the database schema when omitted. SKU uniqueness is enforced per organization. Duplicate SKUs return `409`.
+
+### List products
+
+`GET /api/products`
+
+Returns all products for the authenticated user's organization.
+
+### Get one product
+
+`GET /api/products/:id`
+
+Returns `404` when the product does not exist or belongs to another organization.
+
+### Update product
+
+`PUT /api/products/:id`
+
+Send any product fields to update:
+
+```json
+{
+  "name": "Wireless Keyboard - Rev 2",
+  "quantity_on_hand": 30,
+  "selling_price": 31.99
+}
+```
+
+At least one field is required. All supplied values are validated, and duplicate SKU conflicts return `409`.
+
+### Delete product
+
+`DELETE /api/products/:id`
+
+Deletes only a product owned by the authenticated user's organization. Missing or cross-organization products return `404`.
 
 ## Authentication test checklist
 

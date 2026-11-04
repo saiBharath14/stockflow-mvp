@@ -2,6 +2,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import express from 'express'
 import authRoutes from './routes/authRoutes.js'
+import productRoutes from './routes/productRoutes.js'
 
 dotenv.config()
 
@@ -15,6 +16,7 @@ app.get('/api/health', (_request, response) => {
 })
 
 app.use('/api/auth', authRoutes)
+app.use('/api/products', productRoutes)
 
 app.use((error, _request, response, _next) => {
   console.error(error)
