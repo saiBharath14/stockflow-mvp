@@ -4,6 +4,7 @@ import express from 'express'
 import authRoutes from './routes/authRoutes.js'
 import dashboardRoutes from './routes/dashboardRoutes.js'
 import productRoutes from './routes/productRoutes.js'
+import settingsRoutes from './routes/settingsRoutes.js'
 
 dotenv.config()
 
@@ -19,6 +20,7 @@ app.get('/api/health', (_request, response) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/dashboard', dashboardRoutes)
+app.use('/api/settings', settingsRoutes)
 
 app.use((error, _request, response, _next) => {
   console.error(error)
