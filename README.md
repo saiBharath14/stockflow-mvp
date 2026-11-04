@@ -141,6 +141,34 @@ Authorization: Bearer <token>
 
 Missing, invalid, and expired tokens return `401`.
 
+## Dashboard endpoint
+
+`GET /api/dashboard/summary`
+
+This protected endpoint returns organization-scoped inventory metrics:
+
+```json
+{
+  "success": true,
+  "summary": {
+    "total_products": 2,
+    "total_quantity": 35,
+    "low_stock_count": 1,
+    "low_stock_products": [
+      {
+        "id": 1,
+        "name": "Wireless Keyboard",
+        "sku": "KB-001",
+        "quantity_on_hand": 3,
+        "effective_low_stock_threshold": 5
+      }
+    ]
+  }
+}
+```
+
+Low-stock evaluation uses the product threshold, then the organization's settings threshold, then `5` if neither is configured. Empty organizations return zero metrics and an empty `low_stock_products` list.
+
 ## Product endpoints
 
 All product endpoints require:
